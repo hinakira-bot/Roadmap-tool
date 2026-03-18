@@ -150,9 +150,12 @@ export default function AdminPage() {
 
   const createRoadmap = async () => {
     const { data: { session } } = await supabase.auth.getSession()
-    if (!session) return
+    if (!session) {
+      alert('セッションがありません。再ログインしてください。')
+      return
+    }
 
-    const { data: rm } = await supabase
+    const { data: rm, error: rmError } = await supabase
       .from('roadmaps')
       .insert({
         title: newTitle,
@@ -164,6 +167,11 @@ export default function AdminPage() {
       .select()
       .single()
 
+    if (rmError) {
+      alert('ロードマップ作成エラー: ' + rmError.message)
+      return
+    }
+
     if (rm) {
       const daysToInsert = Array.from({ length: newDays }, (_, i) => ({
         roadmap_id: rm.id,
@@ -171,7 +179,10 @@ export default function AdminPage() {
         title: `Day ${i + 1}`,
         description: '',
       }))
-      await supabase.from('roadmap_days').insert(daysToInsert)
+      const { error: daysError } = await supabase.from('roadmap_days').insert(daysToInsert)
+      if (daysError) {
+        alert('日程作成エラー: ' + daysError.message)
+      }
       router.push(`/admin/edit/${rm.id}`)
     }
   }
