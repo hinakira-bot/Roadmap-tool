@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
+import { Avatar } from '@/lib/types'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -19,10 +20,13 @@ export default function LoginPage() {
   const [showReset, setShowReset] = useState(false)
   const [resetNewPw, setResetNewPw] = useState('')
   const [loginFailed, setLoginFailed] = useState(false)
+  const [avatars, setAvatars] = useState<Avatar[]>([])
+  const [selectedAvatarId, setSelectedAvatarId] = useState<string | null>(null)
   const router = useRouter()
 
   useEffect(() => {
-    const checkSession = async () => {
+    const init = async () => {
+      // セッションチェック
       const { data: { session } } = await supabase.auth.getSession()
       if (session) {
         const { data: profile } = await supabase
@@ -35,11 +39,21 @@ export default function LoginPage() {
         } else {
           router.push('/roadmap/select')
         }
-      } else {
-        setChecking(false)
+        return
       }
+
+      // アバター一覧を取得
+      const { data: avatarData } = await supabase
+        .from('avatars')
+        .select('*')
+        .order('order_index')
+      if (avatarData && avatarData.length > 0) {
+        setAvatars(avatarData)
+      }
+
+      setChecking(false)
     }
-    checkSession()
+    init()
   }, [router])
 
   const handleLogin = async () => {
@@ -71,7 +85,12 @@ export default function LoginPage() {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { display_name: displayName || email.split('@')[0] } },
+      options: {
+        data: {
+          display_name: displayName || email.split('@')[0],
+          avatar_id: selectedAvatarId,
+        },
+      },
     })
     if (error) {
       if (error.message.includes('already registered')) {
@@ -82,7 +101,10 @@ export default function LoginPage() {
     } else if (data.user) {
       await supabase
         .from('profiles')
-        .update({ display_name: displayName || email.split('@')[0] })
+        .update({
+          display_name: displayName || email.split('@')[0],
+          avatar_id: selectedAvatarId,
+        })
         .eq('id', data.user.id)
       router.push('/roadmap/select')
     }
@@ -233,16 +255,67 @@ export default function LoginPage() {
 
           <div className="space-y-4">
             {!isAdmin && isRegister && (
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-amber-500/50">⚔️</span>
-                <input
-                  type="text"
-                  placeholder="表示名（ニックネーム）"
-                  value={displayName}
-                  onChange={(e) => setDisplayName(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 bg-[#0d0d20] border border-amber-500/20 rounded-lg text-amber-100 placeholder-amber-100/30 focus:border-amber-400 focus:outline-none transition-colors"
-                />
-              </div>
+              <>
+                {/* 表示名 */}
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-amber-500/50">⚔️</span>
+                  <input
+                    type="text"
+                    placeholder="表示名（ニックネーム）"
+                    value={displayName}
+                    onChange={(e) => setDisplayName(e.target.value)}
+                    className="w-full pl-10 pr-4 py-3 bg-[#0d0d20] border border-amber-500/20 rounded-lg text-amber-100 placeholder-amber-100/30 focus:border-amber-400 focus:outline-none transition-colors"
+                  />
+                </div>
+
+                {/* アバター選択 */}
+                {avatars.length > 0 && (
+                  <div>
+                    <p className="text-amber-300/70 text-xs mb-2">🛡️ アバターを選択</p>
+                    <div className="grid grid-cols-4 gap-2">
+                      {avatars.map((avatar) => (
+                        <button
+                          key={avatar.id}
+                          onClick={() => setSelectedAvatarId(
+                            selectedAvatarId === avatar.id ? null : avatar.id
+                          )}
+                          className={`relative aspect-square rounded-lg border-2 overflow-hidden transition-all ${
+                            selectedAvatarId === avatar.id
+                              ? 'border-amber-400 shadow-[0_0_12px_rgba(245,158,11,0.4)] scale-105'
+                              : 'border-amber-500/20 hover:border-amber-500/50'
+                          }`}
+                        >
+                          {avatar.image_url.startsWith('/') ? (
+                            <Image
+                              src={avatar.image_url}
+                              alt={avatar.name}
+                              fill
+                              className="object-cover"
+                            />
+                          ) : (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={avatar.image_url}
+                              alt={avatar.name}
+                              className="w-full h-full object-cover"
+                            />
+                          )}
+                          {selectedAvatarId === avatar.id && (
+                            <div className="absolute inset-0 bg-amber-400/20 flex items-center justify-center">
+                              <span className="text-amber-300 text-lg drop-shadow-lg">✓</span>
+                            </div>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                    {selectedAvatarId && (
+                      <p className="text-amber-400/60 text-xs mt-1 text-center">
+                        {avatars.find(a => a.id === selectedAvatarId)?.name}
+                      </p>
+                    )}
+                  </div>
+                )}
+              </>
             )}
 
             <div className="relative">

@@ -1,6 +1,11 @@
 export interface Database {
   public: {
     Tables: {
+      avatars: {
+        Row: Avatar
+        Insert: Omit<Avatar, 'id' | 'created_at'>
+        Update: Partial<Omit<Avatar, 'id' | 'created_at'>>
+      }
       roadmaps: {
         Row: Roadmap
         Insert: Omit<Roadmap, 'id' | 'created_at'>
@@ -30,6 +35,14 @@ export interface Database {
   }
 }
 
+export interface Avatar {
+  id: string
+  name: string
+  image_url: string
+  order_index: number
+  created_at: string
+}
+
 export interface Roadmap {
   id: string
   title: string
@@ -38,6 +51,7 @@ export interface Roadmap {
   created_by: string
   created_at: string
   is_published: boolean
+  background_image_url: string | null
 }
 
 export interface RoadmapDay {
@@ -46,6 +60,7 @@ export interface RoadmapDay {
   day_number: number
   title: string
   description: string
+  stage_image_url: string | null
 }
 
 export interface DayTask {
@@ -69,5 +84,6 @@ export interface Profile {
   email: string
   display_name: string
   is_admin: boolean
+  avatar_id: string | null
   created_at: string
 }
