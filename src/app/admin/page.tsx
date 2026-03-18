@@ -623,9 +623,8 @@ export default function AdminPage() {
                   <input
                     type="text"
                     placeholder="例：Threads 7日間チャレンジ"
-                    defaultValue=""
-                    onBlur={(e) => setNewTitle(e.target.value)}
-                    onKeyUp={(e) => { if (e.key !== 'Process') setNewTitle((e.target as HTMLInputElement).value) }}
+                    value={newTitle}
+                    onChange={(e) => setNewTitle(e.target.value)}
                     className="input-field"
                     autoComplete="off"
                   />
@@ -634,9 +633,8 @@ export default function AdminPage() {
                   <label className="text-sm text-[var(--text-secondary)] mb-1 block">説明</label>
                   <textarea
                     placeholder="ロードマップの説明..."
-                    defaultValue=""
-                    onBlur={(e) => setNewDesc(e.target.value)}
-                    onKeyUp={(e) => { if (e.key !== 'Process') setNewDesc((e.target as HTMLTextAreaElement).value) }}
+                    value={newDesc}
+                    onChange={(e) => setNewDesc(e.target.value)}
                     className="input-field"
                     rows={3}
                     autoComplete="off"
