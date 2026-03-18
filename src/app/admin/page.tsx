@@ -208,6 +208,22 @@ export default function AdminPage() {
     }
   }
 
+  const deleteUser = async (userId: string, email: string) => {
+    if (!confirm(`${email} を削除しますか？この操作は取り消せません。`)) return
+    const res = await fetch('/api/admin/delete-user', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId }),
+    })
+    const data = await res.json()
+    if (data.success) {
+      setUsers(prev => prev.filter(u => u.id !== userId))
+      setSelectedUser(null)
+    } else {
+      alert('削除に失敗しました: ' + data.error)
+    }
+  }
+
   // アバター管理
   const handleAvatarUpload = async (file: File) => {
     setAvatarUploading(true)
@@ -510,6 +526,14 @@ export default function AdminPage() {
                             >
                               PW変更
                             </button>
+                            {!user.is_admin && (
+                              <button
+                                onClick={() => deleteUser(user.id, user.email)}
+                                className="text-red-400 text-xs hover:underline"
+                              >
+                                削除
+                              </button>
+                            )}
                           </div>
                         </td>
                       </tr>
@@ -715,6 +739,14 @@ export default function AdminPage() {
                 <button onClick={() => setSelectedUser(null)} className="btn-secondary text-sm">
                   閉じる
                 </button>
+                {!selectedUser.is_admin && (
+                  <button
+                    onClick={() => deleteUser(selectedUser.id, selectedUser.email)}
+                    className="btn-secondary text-sm text-red-400 border-red-400/30 hover:bg-red-400/10"
+                  >
+                    🗑️ 削除
+                  </button>
+                )}
               </div>
             </div>
           </div>
