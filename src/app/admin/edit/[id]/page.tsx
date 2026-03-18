@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase'
 import { Roadmap, RoadmapDay, DayTask } from '@/lib/types'
 import { useParams, useRouter } from 'next/navigation'
 import Header from '@/components/Header'
+import RichTextEditor from '@/components/RichTextEditor'
 
 interface DayWithTasks extends RoadmapDay {
   tasks: DayTask[]
@@ -462,14 +463,10 @@ export default function EditRoadmapPage() {
                     </div>
                     {editingTask?.id === task.id && (
                       <div className="w-full mt-2 pl-9">
-                        <textarea
-                          defaultValue={task.description}
-                          onBlur={(e) =>
-                            updateTask(task.id, 'description', e.target.value)
-                          }
-                          className="input-field text-sm"
-                          rows={4}
-                          placeholder="タスクの詳細説明を入力...&#10;（ユーザーがタスクをクリックした時に表示されます）"
+                        <RichTextEditor
+                          content={task.description || ''}
+                          onChange={(html) => updateTask(task.id, 'description', html)}
+                          placeholder="タスクの詳細説明を入力...（画像・表・リンクも挿入できます）"
                         />
                       </div>
                     )}
