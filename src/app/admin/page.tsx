@@ -77,10 +77,11 @@ export default function AdminPage() {
 
     const roadmapsWithStats: RoadmapWithStats[] = []
     for (const rm of rms || []) {
-      const { count: userCount } = await supabase
+      const { data: userProgressData } = await supabase
         .from('user_progress')
-        .select('user_id', { count: 'exact', head: true })
+        .select('user_id')
         .eq('roadmap_id', rm.id)
+      const userCount = new Set(userProgressData?.map(r => r.user_id) || []).size
 
       roadmapsWithStats.push({
         ...rm,
