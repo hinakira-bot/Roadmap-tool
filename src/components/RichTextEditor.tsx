@@ -11,7 +11,7 @@ import Link from '@tiptap/extension-link'
 import TextAlign from '@tiptap/extension-text-align'
 import Underline from '@tiptap/extension-underline'
 import Placeholder from '@tiptap/extension-placeholder'
-import { useCallback, useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 
 interface RichTextEditorProps {
@@ -22,6 +22,7 @@ interface RichTextEditorProps {
 
 export default function RichTextEditor({ content, onChange, placeholder }: RichTextEditorProps) {
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [showTableMenu, setShowTableMenu] = useState(false)
 
   const editor = useEditor({
     extensions: [
@@ -49,6 +50,9 @@ export default function RichTextEditor({ content, onChange, placeholder }: RichT
       debounceRef.current = setTimeout(() => {
         onChange(editor.getHTML())
       }, 500)
+    },
+    onSelectionUpdate: ({ editor }) => {
+      setShowTableMenu(editor.isActive('table'))
     },
     editorProps: {
       attributes: {
@@ -115,7 +119,7 @@ export default function RichTextEditor({ content, onChange, placeholder }: RichT
 
   return (
     <div className="rich-editor-wrapper">
-      {/* ツールバー */}
+      {/* メインツールバー */}
       <div className="rich-editor-toolbar">
         {/* テキストスタイル */}
         <div className="toolbar-group">
@@ -279,6 +283,71 @@ export default function RichTextEditor({ content, onChange, placeholder }: RichT
           </button>
         </div>
       </div>
+
+      {/* 表操作ツールバー（表が選択されている時のみ表示） */}
+      {showTableMenu && (
+        <div className="rich-editor-table-toolbar">
+          <span className="table-toolbar-label">📊 表の操作:</span>
+          <button
+            type="button"
+            onClick={() => editor.chain().focus().addColumnBefore().run()}
+            className="table-toolbar-btn"
+            title="左に列追加"
+          >
+            ← 列追加
+          </button>
+          <button
+            type="button"
+            onClick={() => editor.chain().focus().addColumnAfter().run()}
+            className="table-toolbar-btn"
+            title="右に列追加"
+          >
+            列追加 →
+          </button>
+          <button
+            type="button"
+            onClick={() => editor.chain().focus().deleteColumn().run()}
+            className="table-toolbar-btn table-toolbar-btn-danger"
+            title="列を削除"
+          >
+            列削除
+          </button>
+          <div className="toolbar-divider" />
+          <button
+            type="button"
+            onClick={() => editor.chain().focus().addRowBefore().run()}
+            className="table-toolbar-btn"
+            title="上に行追加"
+          >
+            ↑ 行追加
+          </button>
+          <button
+            type="button"
+            onClick={() => editor.chain().focus().addRowAfter().run()}
+            className="table-toolbar-btn"
+            title="下に行追加"
+          >
+            行追加 ↓
+          </button>
+          <button
+            type="button"
+            onClick={() => editor.chain().focus().deleteRow().run()}
+            className="table-toolbar-btn table-toolbar-btn-danger"
+            title="行を削除"
+          >
+            行削除
+          </button>
+          <div className="toolbar-divider" />
+          <button
+            type="button"
+            onClick={() => editor.chain().focus().deleteTable().run()}
+            className="table-toolbar-btn table-toolbar-btn-danger"
+            title="表を削除"
+          >
+            🗑️ 表を削除
+          </button>
+        </div>
+      )}
 
       {/* エディタ本体 */}
       <EditorContent editor={editor} />

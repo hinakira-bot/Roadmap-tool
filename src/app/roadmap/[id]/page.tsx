@@ -441,9 +441,16 @@ export default function RoadmapPage() {
               <h2 className="text-lg font-bold text-amber-200">📜 {selectedTask.title}</h2>
               <button onClick={() => setSelectedTask(null)} className="text-amber-500/50 text-2xl hover:text-amber-300">×</button>
             </div>
-            <div className="text-amber-100/60 whitespace-pre-wrap leading-relaxed text-sm bg-[#0d0d20]/50 p-4 rounded-lg border border-amber-500/10">
-              {selectedTask.description || 'クエストの詳細はまだ設定されていません。'}
-            </div>
+            {selectedTask.description ? (
+              <div
+                className="rich-content text-amber-100/60 leading-relaxed text-sm bg-[#0d0d20]/50 p-4 rounded-lg border border-amber-500/10"
+                dangerouslySetInnerHTML={{ __html: selectedTask.description }}
+              />
+            ) : (
+              <div className="text-amber-100/60 text-sm bg-[#0d0d20]/50 p-4 rounded-lg border border-amber-500/10">
+                クエストの詳細はまだ設定されていません。
+              </div>
+            )}
             <div className="mt-6 flex gap-3">
               <button
                 onClick={() => { toggleTask(selectedTask.id); setSelectedTask(null) }}

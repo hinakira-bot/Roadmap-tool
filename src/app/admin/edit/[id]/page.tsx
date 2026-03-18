@@ -416,7 +416,7 @@ export default function EditRoadmapPage() {
         {selectedDay && (
           <div className="modal-overlay" onClick={() => { setSelectedDay(null); setEditingTask(null) }}>
             <div
-              className="modal-content max-w-2xl"
+              className="modal-content modal-content-large"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex justify-between items-start mb-6">
